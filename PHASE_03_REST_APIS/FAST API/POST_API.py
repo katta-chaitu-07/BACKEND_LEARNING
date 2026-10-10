@@ -1,35 +1,30 @@
-
 from fastapi import FastAPI
-
+from pydantic import BaseModel
 
 app = FastAPI()
 
-vehicle = [
-    {
-        "id" : 1,
-        "Type " : "car",
-        "Brand" : "Toyota",
-        "Price" : 2500000, 
-    },
-    {
-        "id" : 2,
-        "Type " : "Bus",
-        "Brand" : "Volvo",
-        "Price " : 15000000
-    }
+products = [
+    {"id": 1, "name": "Laptop", "price": 50000},
+    {"id": 2, "name": "Phone", "price": 25000}
 ]
 
-@app.get("/vehicle")
-def get_vehicle():
-    return vehicle
+# Define the structure of incoming product data
+class Product(BaseModel):
+    id: int
+    name: str
+    price: float
 
-@app.post("/vehicle")
-def add_vehicles(vehicle_id : dict):
-    vehicle.append(vehicle_id)
+# POST: Add a new product
+@app.post("/products", status_code=201)
+def create_product(product: Product):
+    for existing_product in products:
+        if existing_product["id"] == product.id:
+            return {"message": "Product ID already exists"}
 
-    return{
-        "vehicle_id " : vehicle_id,
-        "message" : "vehicle successfully added"
+    new_product = product.model_dump()
+    products.append(new_product)
+
+    return {
+        "message": "Product created successfully",
+        "product": new_product
     }
-
- 
